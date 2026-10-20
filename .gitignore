@@ -1,0 +1,18 @@
+target/
+.env
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# SO
+.DS_Store
+Thumbs.db
+
+# SonarQube local
+.scannerwork/

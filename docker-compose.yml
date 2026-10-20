@@ -1,0 +1,53 @@
+services:
+
+  # Base de datos relacional
+  db:
+    image: postgres:16-alpine
+    container_name: menu-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-menu_restaurante}
+      POSTGRES_USER: ${DB_USER:-menu_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-menu_pass}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-menu_user} -d ${DB_NAME:-menu_restaurante}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Aplicación Spring Boot (API REST + frontend estático)
+  app:
+    build: .
+    container_name: menu-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5433
+      DB_NAME: ${DB_NAME:-menu_restaurante}
+      DB_USER: ${DB_USER:-menu_user}
+      DB_PASSWORD: ${DB_PASSWORD:-menu_pass}
+    ports:
+      - "8080:8080"
+
+  # Análisis estático de calidad (se levanta solo con: docker compose --profile calidad up -d sonarqube)
+  sonarqube:
+    image: sonarqube:community
+    container_name: menu-sonarqube
+    profiles: ["calidad"]
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    volumes:
+      - sonar_data:/opt/sonarqube/data
+      - sonar_extensions:/opt/sonarqube/extensions
+
+volumes:
+  pgdata:
+  sonar_data:
+  sonar_extensions:
