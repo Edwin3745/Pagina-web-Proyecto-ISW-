@@ -29,6 +29,11 @@ public class GlobalExceptionHandler {
         return construir(HttpStatus.CONFLICT, ex.getMessage(), req, null);
     }
 
+    @ExceptionHandler(CambioCategoriaNoPermitidoException.class)
+    public ResponseEntity<ErrorResponse> cambioCategoria(CambioCategoriaNoPermitidoException ex, HttpServletRequest req) {
+        return construir(HttpStatus.CONFLICT, ex.getMessage(), req, null);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> validacion(MethodArgumentNotValidException ex, HttpServletRequest req) {
         Map<String, String> campos = new LinkedHashMap<>();

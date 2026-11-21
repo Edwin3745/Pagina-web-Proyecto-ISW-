@@ -16,6 +16,7 @@ public record ProductoResponse(
         CategoriaProducto categoria,
         boolean disponible,
         LocalDateTime fechaCreacion,
-        LocalDateTime fechaActualizacion
+        LocalDateTime fechaActualizacion,
+        int tiempoPreparacionMin
 ) {
 }

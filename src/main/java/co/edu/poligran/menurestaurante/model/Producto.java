@@ -1,12 +1,16 @@
 package co.edu.poligran.menurestaurante.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -15,12 +19,21 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Entidad de dominio: un producto (plato o ítem) del menú del restaurante.
- * El ORM (Hibernate, vía JPA) la mapea a la tabla "productos".
+ * Patrón Factory Method – participante «Product».
+ * <p>
+ * Entidad de dominio abstracta: un producto (plato o ítem) del menú del restaurante.
+ * Sus subclases concretas (Entrada, PlatoFuerte, Acompanamiento, Postre y Bebida) se crean
+ * mediante los creadores del paquete {@code service.factory}.
+ * <p>
+ * Persistencia: herencia {@code SINGLE_TABLE}. Todas las subclases se guardan en la tabla
+ * "productos" y la columna "categoria" actúa como discriminador, por lo que el esquema de la
+ * base de datos no cambia y los registros existentes siguen siendo válidos.
  */
 @Entity
 @Table(name = "productos")
-public class Producto {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "categoria", discriminatorType = DiscriminatorType.STRING, length = 30)
+public abstract class Producto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,8 +48,12 @@ public class Producto {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precio;
 
+    /**
+     * Columna discriminadora expuesta como propiedad de solo lectura: permite consultar por
+     * categoría (findByCategoria) sin que el valor se escriba dos veces.
+     */
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(name = "categoria", length = 30, insertable = false, updatable = false)
     private CategoriaProducto categoria;
 
     @Column(nullable = false)
@@ -48,18 +65,24 @@ public class Producto {
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion;
 
-    public Producto() {
+    protected Producto() {
         // Requerido por JPA
     }
 
-    public Producto(String nombre, String descripcion, BigDecimal precio,
-                    CategoriaProducto categoria, boolean disponible) {
+    protected Producto(String nombre, String descripcion, BigDecimal precio,
+                       CategoriaProducto categoria, boolean disponible) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precio = precio;
         this.categoria = categoria;
         this.disponible = disponible;
     }
+
+    /**
+     * Tiempo estimado de preparación en minutos. Cada producto concreto define el suyo
+     * (comportamiento polimórfico); no se guarda en la base de datos.
+     */
+    public abstract int getTiempoPreparacionMin();
 
     @PrePersist
     void alCrear() {
@@ -74,7 +97,6 @@ public class Producto {
     }
 
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
@@ -86,7 +108,6 @@ public class Producto {
     public void setPrecio(BigDecimal precio) { this.precio = precio; }
 
     public CategoriaProducto getCategoria() { return categoria; }
-    public void setCategoria(CategoriaProducto categoria) { this.categoria = categoria; }
 
     public boolean isDisponible() { return disponible; }
     public void setDisponible(boolean disponible) { this.disponible = disponible; }

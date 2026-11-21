@@ -27,7 +27,7 @@ services:
         condition: service_healthy
     environment:
       DB_HOST: db
-      DB_PORT: 5433
+      DB_PORT: 5432
       DB_NAME: ${DB_NAME:-menu_restaurante}
       DB_USER: ${DB_USER:-menu_user}
       DB_PASSWORD: ${DB_PASSWORD:-menu_pass}

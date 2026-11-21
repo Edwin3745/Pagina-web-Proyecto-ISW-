@@ -2,6 +2,7 @@ package co.edu.poligran.menurestaurante.service.impl;
 
 import co.edu.poligran.menurestaurante.dto.ProductoRequest;
 import co.edu.poligran.menurestaurante.dto.ProductoResponse;
+import co.edu.poligran.menurestaurante.exception.CambioCategoriaNoPermitidoException;
 import co.edu.poligran.menurestaurante.exception.ProductoDuplicadoException;
 import co.edu.poligran.menurestaurante.exception.RecursoNoEncontradoException;
 import co.edu.poligran.menurestaurante.mapper.ProductoMapper;
@@ -9,6 +10,7 @@ import co.edu.poligran.menurestaurante.model.CategoriaProducto;
 import co.edu.poligran.menurestaurante.model.Producto;
 import co.edu.poligran.menurestaurante.repository.ProductoRepository;
 import co.edu.poligran.menurestaurante.service.ProductoService;
+import co.edu.poligran.menurestaurante.service.factory.ProductoCreadorProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +25,13 @@ public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository repository;
     private final ProductoMapper mapper;
+    private final ProductoCreadorProvider creadores;
 
-    public ProductoServiceImpl(ProductoRepository repository, ProductoMapper mapper) {
+    public ProductoServiceImpl(ProductoRepository repository, ProductoMapper mapper,
+                               ProductoCreadorProvider creadores) {
         this.repository = repository;
         this.mapper = mapper;
+        this.creadores = creadores;
     }
 
     @Override
@@ -57,13 +62,17 @@ public class ProductoServiceImpl implements ProductoService {
         if (repository.existsByNombreIgnoreCase(request.nombre().trim())) {
             throw new ProductoDuplicadoException(request.nombre());
         }
-        Producto guardado = repository.save(mapper.toEntity(request));
-        return mapper.toResponse(guardado);
+        // Factory Method: el creador de la categoría decide qué subclase de Producto instanciar
+        Producto nuevo = creadores.obtener(request.categoria()).registrar(request);
+        return mapper.toResponse(repository.save(nuevo));
     }
 
     @Override
     public ProductoResponse actualizar(Long id, ProductoRequest request) {
         Producto producto = buscarOFallar(id);
+        if (producto.getCategoria() != request.categoria()) {
+            throw new CambioCategoriaNoPermitidoException(producto.getCategoria(), request.categoria());
+        }
         if (repository.existsByNombreIgnoreCaseAndIdNot(request.nombre().trim(), id)) {
             throw new ProductoDuplicadoException(request.nombre());
         }
