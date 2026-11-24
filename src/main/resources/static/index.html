@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Carta del restaurante</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Young+Serif&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="saltar" href="#carta">Ir a la carta</a>
+
+  <header class="cabecera">
+    <div class="contenedor cabecera__interior">
+      <div>
+        <h1>Carta del restaurante</h1>
+        <p class="resumen" id="resumen" aria-live="polite">Cargando productos…</p>
+      </div>
+      <button type="button" class="boton boton--primario" id="btn-agregar">Agregar producto</button>
+    </div>
+  </header>
+
+  <main class="contenedor" id="carta">
+    <div class="filtros">
+      <fieldset class="categorias">
+        <legend class="solo-lectores">Filtrar por categoría</legend>
+        <div class="categorias__lista" id="filtro-categorias"></div>
+      </fieldset>
+      <label class="check">
+        <input type="checkbox" id="solo-disponibles">
+        <span>Solo disponibles</span>
+      </label>
+    </div>
+
+    <div id="contenido" aria-busy="true"></div>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor">
+      <p>Servicio REST documentado en <a href="/swagger-ui.html" target="_blank" rel="noopener">Swagger UI</a>.
+         Proyecto de aula de Ingeniería de Software, Politécnico Grancolombiano.</p>
+    </div>
+  </footer>
+
+  <dialog id="dlg-producto" aria-labelledby="dlg-titulo">
+    <form id="form-producto" novalidate>
+      <h2 id="dlg-titulo">Agregar producto</h2>
+
+      <div class="campo">
+        <label for="f-nombre">Nombre</label>
+        <input id="f-nombre" name="nombre" type="text" maxlength="100" required autocomplete="off">
+        <p class="error" id="err-nombre"></p>
+      </div>
+
+      <div class="campo">
+        <label for="f-descripcion">Descripción <span class="opcional">(opcional)</span></label>
+        <textarea id="f-descripcion" name="descripcion" rows="3" maxlength="500"></textarea>
+        <p class="ayuda" id="contador">0 de 500 caracteres</p>
+        <p class="error" id="err-descripcion"></p>
+      </div>
+
+      <div class="fila">
+        <div class="campo">
+          <label for="f-precio">Precio (COP)</label>
+          <input id="f-precio" name="precio" type="number" min="0.01" max="99999999.99" step="0.01" inputmode="decimal" required>
+          <p class="error" id="err-precio"></p>
+        </div>
+        <div class="campo">
+          <label for="f-categoria">Categoría</label>
+          <select id="f-categoria" name="categoria" required></select>
+          <p class="ayuda" id="ayuda-categoria" hidden>La categoría no se puede cambiar. Para cambiarla, elimina el producto y créalo de nuevo.</p>
+          <p class="error" id="err-categoria"></p>
+        </div>
+      </div>
+
+      <label class="check">
+        <input type="checkbox" id="f-disponible" name="disponible" checked>
+        <span>Disponible en el menú</span>
+      </label>
+
+      <p class="error error--general" id="err-general" role="alert"></p>
+
+      <div class="dialogo__acciones">
+        <button type="button" class="boton" id="btn-cancelar">Cancelar</button>
+        <button type="submit" class="boton boton--primario" id="btn-guardar">Agregar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-eliminar" aria-labelledby="eliminar-titulo">
+    <form method="dialog" id="form-eliminar">
+      <h2 id="eliminar-titulo">Eliminar producto</h2>
+      <p id="eliminar-texto"></p>
+      <div class="dialogo__acciones">
+        <button type="button" class="boton" id="btn-no-eliminar">Cancelar</button>
+        <button type="submit" class="boton boton--peligro" id="btn-si-eliminar">Eliminar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="aviso" class="aviso" role="status" aria-live="polite"></div>
+
+  <noscript><p class="contenedor">Esta aplicación necesita JavaScript para mostrar la carta.</p></noscript>
+  <script src="js/app.js"></script>
+</body>
+</html>
